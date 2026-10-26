@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-10-26T20:02:23.199256+08:00",
+  "theme": "dark",
+  "images": [
+    {
+      "id": "E001-after",
+      "file": "E001-after.png",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 22,
+      "line_end": 27,
+      "rule_id": "JAVA-EMPTY-CATCH",
+      "title": "记录并重新抛出异常，避免静默失败",
+      "severity": "suggested",
+      "confidence": "suggested"
+    }
+  ]
+}

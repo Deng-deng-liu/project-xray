@@ -3,3 +3,4 @@ include LICENSE
 include CHANGELOG.md
 recursive-include skills *
 recursive-include examples *
+recursive-include docs *

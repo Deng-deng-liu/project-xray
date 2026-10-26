@@ -1,0 +1,319 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-26T20:02:22.783998+08:00",
+  "repo": {
+    "path": "D:\\CodexSkills\\project-xray-oss-release\\examples\\spring-demo",
+    "git": {
+      "head": "a9e52a919b5dada70e304f8b2986b799b77ca8fc",
+      "branch": "main",
+      "dirty": false
+    },
+    "files_total": 7,
+    "files_scanned": 7,
+    "files_skipped": 0
+  },
+  "project": {
+    "name": "demo-service",
+    "root": "D:\\CodexSkills\\project-xray-oss-release\\examples\\spring-demo",
+    "git": {
+      "head": "a9e52a919b5dada70e304f8b2986b799b77ca8fc",
+      "branch": "main",
+      "dirty": false
+    },
+    "tech_stack": [
+      "Maven",
+      "Spring Boot Web",
+      "Spring Boot",
+      "MyBatis",
+      "MySQL"
+    ],
+    "build_system": "Maven",
+    "summary": "Maven + Spring Boot Web + Spring Boot + MyBatis + MySQL；Java 主代码 2 个文件，约 46 行；0 个控制器、0 个接口映射、0 个定时任务。",
+    "counts": {
+      "java_files_main": 2,
+      "java_files_test": 0,
+      "java_loc_main": 46,
+      "java_loc_test": 0,
+      "java_loc_total": 46,
+      "controllers": 0,
+      "endpoints": 0,
+      "services": 1,
+      "mappers": 1,
+      "repositories": 0,
+      "entities": 0,
+      "scheduled_tasks": 0,
+      "sql_files": 2
+    },
+    "modules": [
+      {
+        "name": "com/example",
+        "java_files": 2
+      }
+    ]
+  },
+  "signals": [
+    {
+      "rule_id": "JAVA-EMPTY-CATCH",
+      "title": "空 catch 吞掉异常",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 23,
+      "line_end": 24,
+      "snippet": "            try {\n                orderMapper.selectById(id);\n            } catch (Exception e) {\n            }\n        }\n        try {",
+      "snippet_hash": "293d8c36973dd8dd",
+      "severity": "high",
+      "confidence": "verified",
+      "observed_fact": "catch 块为空，异常被直接吞掉。",
+      "inferred_risk": "上层可能无法感知失败，导致数据不一致或问题难以定位。",
+      "verify_hint": "确认是否应在 catch 中抛出、记录并告警，或执行补偿逻辑。",
+      "tags": [
+        "exception",
+        "reliability"
+      ],
+      "id": "E001"
+    },
+    {
+      "rule_id": "CONFIG-HARD-CODED-SECRET",
+      "title": "硬编码敏感配置",
+      "path": "src/main/resources/application.yml",
+      "line_start": 5,
+      "line_end": 5,
+      "snippet": "    url: jdbc:mysql://10.1.2.3:3306/demo\n    username: root\n    password: ***REDACTED***\nserver-address: \"10.1.2.3\"",
+      "snippet_hash": "840f7be0055533d3",
+      "severity": "high",
+      "confidence": "verified",
+      "observed_fact": "出现字面量敏感配置或硬编码字符串：password（值已脱敏）",
+      "inferred_risk": "凭据进入版本库后可能被复制、泄露或误用于生产环境。",
+      "verify_hint": "确认是否为示例值；生产密钥应迁移到环境变量或密钥管理服务，并轮换已提交的凭据。",
+      "tags": [
+        "security",
+        "secret",
+        "config"
+      ],
+      "id": "E002"
+    },
+    {
+      "rule_id": "JAVA-TX-REMOTE-CALL",
+      "title": "事务方法内调用远程服务",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 16,
+      "line_end": 31,
+      "snippet": "\n    // TODO: replace with batch query\n    @Transactional\n    public void createOrders(List<Long> ids) {\n        String remote = \"10.1.2.3\";\n        restTemplate.postForObject(\"http://example.test/audit\", ids, String.class);\n        for (Long id : ids) {\n            try {\n                orderMapper.selectById(id);\n            } catch (Exception e) {\n            }\n        }\n        try {\n            Thread.sleep(1000);\n        } catch (InterruptedException e) {\n            Thread.currentThread().interrupt();\n        }\n    }\n\n    public synchronized void refresh() {",
+      "snippet_hash": "23f1dc881ddff877",
+      "severity": "high",
+      "confidence": "likely",
+      "observed_fact": "@Transactional 方法内出现远程调用：restTemplate",
+      "inferred_risk": "事务持有时间可能被远程调用拉长，同时带来回滚与外部副作用不一致的风险。",
+      "verify_hint": "确认远程调用是否应在事务提交后执行，以及是否有幂等、重试和补偿设计。",
+      "tags": [
+        "transaction",
+        "rpc",
+        "consistency"
+      ],
+      "id": "E003"
+    },
+    {
+      "rule_id": "JAVA-DB-CALL-IN-LOOP",
+      "title": "循环内数据库访问",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 20,
+      "line_end": 25,
+      "snippet": "        String remote = \"10.1.2.3\";\n        restTemplate.postForObject(\"http://example.test/audit\", ids, String.class);\n        for (Long id : ids) {\n            try {\n                orderMapper.selectById(id);\n            } catch (Exception e) {\n            }\n        }\n        try {\n            Thread.sleep(1000);",
+      "snippet_hash": "c889ee929e94c171",
+      "severity": "high",
+      "confidence": "likely",
+      "observed_fact": "循环体内出现数据库访问调用：.selectById(",
+      "inferred_risk": "数据量增大时可能产生 N+1 查询或逐条写入，放大数据库压力。",
+      "verify_hint": "确认循环规模、数据访问对象类型，以及是否存在 selectBatchIds、saveBatch 或 join 等批量路径。",
+      "tags": [
+        "database",
+        "n+1",
+        "performance"
+      ],
+      "id": "E004"
+    },
+    {
+      "rule_id": "JAVA-THREAD-SLEEP",
+      "title": "代码中调用 Thread.sleep",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 27,
+      "line_end": 27,
+      "snippet": "        }\n        try {\n            Thread.sleep(1000);\n        } catch (InterruptedException e) {\n            Thread.currentThread().interrupt();",
+      "snippet_hash": "fbfe9870810760bc",
+      "severity": "medium",
+      "confidence": "verified",
+      "observed_fact": "代码中出现 Thread.sleep 调用。",
+      "inferred_risk": "若位于请求链路或持锁代码中，会阻塞线程并放大延迟。",
+      "verify_hint": "确认是否用于测试、定时任务或重试退避；生产链路优先使用调度器或异步等待。",
+      "tags": [
+        "stability",
+        "blocking"
+      ],
+      "id": "E005"
+    },
+    {
+      "rule_id": "JAVA-HTTP-NO-TIMEOUT",
+      "title": "HTTP 客户端未见显式超时",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 6,
+      "line_end": 6,
+      "snippet": "import org.springframework.stereotype.Service;\nimport org.springframework.transaction.annotation.Transactional;\nimport org.springframework.web.client.RestTemplate;\n\nimport java.util.List;",
+      "snippet_hash": "425bb0557d9eec22",
+      "severity": "medium",
+      "confidence": "likely",
+      "observed_fact": "使用了 HTTP 客户端，但仓库中未发现显式连接/读取超时配置。",
+      "inferred_risk": "下游变慢或不可用时，请求线程可能长时间阻塞，放大故障范围。",
+      "verify_hint": "确认是否由框架全局配置、网关或客户端工厂统一设置超时。",
+      "tags": [
+        "stability",
+        "http",
+        "timeout"
+      ],
+      "id": "E006"
+    },
+    {
+      "rule_id": "SQL-LIMIT-WITHOUT-ORDER",
+      "title": "LIMIT 查询缺少 ORDER BY",
+      "path": "src/main/resources/query.sql",
+      "line_start": 1,
+      "line_end": 1,
+      "snippet": "SELECT * FROM orders WHERE status = 'NEW' LIMIT 10;",
+      "snippet_hash": "93d0a34aa078828f",
+      "severity": "medium",
+      "confidence": "likely",
+      "observed_fact": "查询使用 LIMIT，但片段中未发现 ORDER BY。",
+      "inferred_risk": "分页或截取结果可能随执行计划变化，导致顺序不稳定或数据漂移。",
+      "verify_hint": "确认业务是否依赖稳定顺序，以及是否需要按主键或业务时间排序。",
+      "tags": [
+        "sql",
+        "pagination",
+        "consistency"
+      ],
+      "id": "E007"
+    },
+    {
+      "rule_id": "SQL-WHERE-COLUMN-NOT-INDEXED",
+      "title": "WHERE 字段未被 DDL 索引覆盖",
+      "path": "src/main/resources/query.sql",
+      "line_start": 1,
+      "line_end": 1,
+      "snippet": "SELECT * FROM orders WHERE status = 'NEW' LIMIT 10;",
+      "snippet_hash": "93d0a34aa078828f",
+      "severity": "medium",
+      "confidence": "likely",
+      "observed_fact": "简单 WHERE 查询使用了未在解析到的 DDL 索引中出现的字段：status",
+      "inferred_risk": "数据量增长后可能出现全表扫描或索引失效，具体取决于执行计划和数据分布。",
+      "verify_hint": "用 EXPLAIN 验证实际执行计划，并确认 DDL 解析是否覆盖了全部迁移脚本和复合索引。",
+      "tags": [
+        "sql",
+        "index",
+        "performance"
+      ],
+      "id": "E008"
+    },
+    {
+      "rule_id": "SRC-TODO",
+      "title": "TODO 标记",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 15,
+      "line_end": 15,
+      "snippet": "    private final RestTemplate restTemplate = new RestTemplate();\n\n    // TODO: replace with batch query\n    @Transactional\n    public void createOrders(List<Long> ids) {",
+      "snippet_hash": "b0b990f0f7c8ee51",
+      "severity": "low",
+      "confidence": "verified",
+      "observed_fact": "源码中出现 TODO 标记：TODO: replace with batch query",
+      "inferred_risk": "可能代表未完成逻辑、临时方案或待处理风险。",
+      "verify_hint": "确认标记是否仍然有效，以及是否已有后续提交或替代方案。",
+      "tags": [
+        "maintenance",
+        "todo"
+      ],
+      "id": "E009"
+    },
+    {
+      "rule_id": "CONFIG-HARD-CODED-IP",
+      "title": "硬编码 IP 地址",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 18,
+      "line_end": 18,
+      "snippet": "    @Transactional\n    public void createOrders(List<Long> ids) {\n        String remote = \"10.1.2.3\";\n        restTemplate.postForObject(\"http://example.test/audit\", ids, String.class);\n        for (Long id : ids) {",
+      "snippet_hash": "4fa92fc4a19a0c0d",
+      "severity": "low",
+      "confidence": "likely",
+      "observed_fact": "源码或配置中出现字面量 IP：10.1.2.3",
+      "inferred_risk": "环境切换和故障迁移时容易失效，也可能暴露内部网络信息。",
+      "verify_hint": "确认是否为本地/示例地址；生产环境建议使用域名或配置中心。",
+      "tags": [
+        "config",
+        "environment",
+        "network"
+      ],
+      "id": "E010"
+    },
+    {
+      "rule_id": "CONFIG-HARD-CODED-IP",
+      "title": "硬编码 IP 地址",
+      "path": "src/main/resources/application.yml",
+      "line_start": 6,
+      "line_end": 6,
+      "snippet": "    username: root\n    password: ***REDACTED***\nserver-address: \"10.1.2.3\"",
+      "snippet_hash": "7d1a29f4fdba860d",
+      "severity": "low",
+      "confidence": "likely",
+      "observed_fact": "源码或配置中出现字面量 IP：10.1.2.3",
+      "inferred_risk": "环境切换和故障迁移时容易失效，也可能暴露内部网络信息。",
+      "verify_hint": "确认是否为本地/示例地址；生产环境建议使用域名或配置中心。",
+      "tags": [
+        "config",
+        "environment",
+        "network"
+      ],
+      "id": "E011"
+    },
+    {
+      "rule_id": "JAVA-SYNCHRONIZED",
+      "title": "synchronized 使用点",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 33,
+      "line_end": 33,
+      "snippet": "    }\n\n    public synchronized void refresh() {\n        // refresh cache\n    }",
+      "snippet_hash": "bf65697b0d86fb58",
+      "severity": "low",
+      "confidence": "uncertain",
+      "observed_fact": "代码中出现 synchronized 关键字。",
+      "inferred_risk": "锁粒度、锁对象和跨实例一致性需要结合业务确认，不能仅凭关键字判定为问题。",
+      "verify_hint": "确认是否单机部署、锁对象是否共享、临界区是否包含 I/O 或远程调用。",
+      "tags": [
+        "concurrency",
+        "review"
+      ],
+      "id": "E012"
+    }
+  ],
+  "stats": {
+    "signals": 12,
+    "by_rule": {
+      "CONFIG-HARD-CODED-IP": 2,
+      "CONFIG-HARD-CODED-SECRET": 1,
+      "JAVA-DB-CALL-IN-LOOP": 1,
+      "JAVA-EMPTY-CATCH": 1,
+      "JAVA-HTTP-NO-TIMEOUT": 1,
+      "JAVA-SYNCHRONIZED": 1,
+      "JAVA-THREAD-SLEEP": 1,
+      "JAVA-TX-REMOTE-CALL": 1,
+      "SQL-LIMIT-WITHOUT-ORDER": 1,
+      "SQL-WHERE-COLUMN-NOT-INDEXED": 1,
+      "SRC-TODO": 1
+    },
+    "by_severity": {
+      "high": 4,
+      "medium": 4,
+      "low": 4
+    },
+    "by_confidence": {
+      "verified": 4,
+      "likely": 7,
+      "uncertain": 1
+    }
+  },
+  "warnings": []
+}

@@ -1,0 +1,6 @@
+CREATE TABLE orders (
+  id BIGINT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  created_at DATETIME NOT NULL
+) ENGINE=InnoDB;

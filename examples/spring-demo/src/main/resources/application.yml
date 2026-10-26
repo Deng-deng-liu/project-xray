@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:mysql://10.1.2.3:3306/demo
+    username: root
+    password: SuperSecret123
+server-address: "10.1.2.3"

@@ -1,0 +1,12 @@
+{
+  "fixes": [
+    {
+      "evidence_id": "E001",
+      "title": "记录并重新抛出异常，避免静默失败",
+      "path": "src/main/java/com/example/demo/service/OrderService.java",
+      "line_start": 22,
+      "line_end": 27,
+      "after_snippet": "try {\n    orderMapper.selectById(id);\n} catch (Exception e) {\n    log.error(\"failed to load order {}\", id, e);\n    throw new RuntimeException(\"load order failed\", e);\n}"
+    }
+  ]
+}

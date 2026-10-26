@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapper namespace="com.example.demo.mapper.OrderMapper">
+  <select id="selectById" resultType="map">
+    SELECT * FROM orders WHERE id = #{id}
+  </select>
+</mapper>

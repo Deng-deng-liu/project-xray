@@ -1,0 +1,5 @@
+interface:
+  display_name: "项目 X 光机 / 简历防打脸器"
+  short_description: "扫描 Java Spring 项目，生成带代码截图和完整答案的面试报告"
+  default_prompt: "Use $project-xray to scan this repository and generate evidence-linked interview questions, code screenshots, and complete answers."
+  brand_color: "#0EA5E9"
